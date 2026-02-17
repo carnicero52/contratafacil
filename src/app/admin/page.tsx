@@ -37,7 +37,9 @@ import {
   Bell,
   Send,
   Table,
-  TestTube
+  TestTube,
+  Trash,
+  Trash2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -230,6 +232,55 @@ export default function AdminPage() {
     window.location.href = '/api/candidatos/exportar';
   };
 
+  const eliminarCandidato = async (id: string) => {
+    if (!confirm('¿Estás seguro de eliminar este candidato?')) return;
+    
+    try {
+      const response = await fetch(`/api/candidatos/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        setCandidatos(prev => prev.filter(c => c.id !== id));
+        if (selectedCandidato?.id === id) {
+          setSelectedCandidato(null);
+        }
+        toast({ title: 'Candidato eliminado' });
+      } else {
+        toast({ title: 'Error', description: 'No se pudo eliminar', variant: 'destructive' });
+      }
+    } catch {
+      toast({ title: 'Error', description: 'Error al eliminar', variant: 'destructive' });
+    }
+  };
+
+  const limpiarLista = async () => {
+    if (candidatos.length === 0) {
+      toast({ title: 'No hay candidatos para eliminar' });
+      return;
+    }
+    
+    if (!confirm(`¿Eliminar TODOS los ${candidatos.length} candidatos?\n\nEsta acción no se puede deshacer. Te recomendamos exportar antes.`)) return;
+    
+    try {
+      const response = await fetch('/api/candidatos', {
+        method: 'DELETE'
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setCandidatos([]);
+        setSelectedCandidato(null);
+        toast({ title: 'Lista limpiada', description: `${result.eliminados || candidatos.length} candidatos eliminados` });
+      } else {
+        toast({ title: 'Error', description: 'No se pudo limpiar la lista', variant: 'destructive' });
+      }
+    } catch {
+      toast({ title: 'Error', description: 'Error al limpiar lista', variant: 'destructive' });
+    }
+  };
+
   const testNotificacion = async (tipo: 'telegram' | 'email' | 'whatsapp') => {
     if (!negocio) return;
     setTestingNotif(tipo);
@@ -356,6 +407,10 @@ export default function AdminPage() {
             <Button variant="outline" size="sm" onClick={exportarCandidatos} className="gap-2">
               <Download className="w-4 h-4" />
               <span className="hidden sm:inline">Exportar</span>
+            </Button>
+            <Button variant="outline" size="sm" onClick={limpiarLista} className="gap-2 text-red-600 border-red-200 hover:bg-red-50">
+              <Trash2 className="w-4 h-4" />
+              <span className="hidden sm:inline">Limpiar lista</span>
             </Button>
             <Button variant="outline" size="sm" onClick={handleLogout} className="gap-2">
               <LogOut className="w-4 h-4" />
@@ -649,6 +704,18 @@ export default function AdminPage() {
                             <XCircle className="w-4 h-4 mr-1" /> Rechazado
                           </Button>
                         </div>
+                      </div>
+
+                      <div className="pt-4 border-t">
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="w-full text-red-600 border-red-200 hover:bg-red-50"
+                          onClick={() => eliminarCandidato(selectedCandidato.id)}
+                        >
+                          <Trash className="w-4 h-4 mr-2" />
+                          Eliminar candidato
+                        </Button>
                       </div>
 
                       <div className="space-y-2 pt-4 border-t">

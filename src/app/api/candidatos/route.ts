@@ -108,6 +108,44 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// Eliminar TODOS los candidatos del negocio
+export async function DELETE() {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('session_token')?.value;
+
+    if (!token) {
+      return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
+    }
+
+    const db = getDb();
+
+    const sesionResult = await db.execute({
+      sql: 'SELECT * FROM Sesion WHERE token = ?',
+      args: [token]
+    });
+
+    if (sesionResult.rows.length === 0) {
+      return NextResponse.json({ error: 'Sesión expirada' }, { status: 401 });
+    }
+
+    const sesion = sesionResult.rows[0];
+
+    const result = await db.execute({
+      sql: 'DELETE FROM Candidato WHERE negocioId = ?',
+      args: [sesion.negocioId as string]
+    });
+
+    return NextResponse.json({ 
+      success: true, 
+      eliminados: result.rowsAffected || 0 
+    });
+  } catch (error) {
+    console.error('Error al eliminar candidatos:', error);
+    return NextResponse.json({ error: 'Error al eliminar candidatos' }, { status: 500 });
+  }
+}
+
 // Función para enviar notificaciones
 async function enviarNotificacionesAsync(negocio: any, candidato: any) {
   const promesas: Promise<void>[] = [];
