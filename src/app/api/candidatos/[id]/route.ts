@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { getDb } from '@/lib/db-libsql';
 import { cookies } from 'next/headers';
 
 // Actualizar candidato
@@ -16,38 +16,36 @@ export async function PATCH(
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
     }
 
-    const sesion = await db.sesion.findUnique({
-      where: { token },
-      include: { negocio: true }
+    const db = getDb();
+
+    const sesionResult = await db.execute({
+      sql: 'SELECT * FROM Sesion WHERE token = ?',
+      args: [token]
     });
 
-    if (!sesion || sesion.expiresAt < new Date()) {
+    if (sesionResult.rows.length === 0) {
       return NextResponse.json({ error: 'Sesión expirada' }, { status: 401 });
     }
 
+    const sesion = sesionResult.rows[0];
     const data = await request.json();
 
     // Verificar que el candidato pertenece a este negocio
-    const candidato = await db.candidato.findFirst({
-      where: { 
-        id,
-        negocioId: sesion.negocioId 
-      }
+    const candidatoResult = await db.execute({
+      sql: 'SELECT id FROM Candidato WHERE id = ? AND negocioId = ?',
+      args: [id, sesion.negocioId as string]
     });
 
-    if (!candidato) {
+    if (candidatoResult.rows.length === 0) {
       return NextResponse.json({ error: 'Candidato no encontrado' }, { status: 404 });
     }
 
-    const actualizado = await db.candidato.update({
-      where: { id },
-      data: {
-        estado: data.estado,
-        notas: data.notas
-      }
+    await db.execute({
+      sql: 'UPDATE Candidato SET estado = ?, notas = ?, updatedAt = ? WHERE id = ?',
+      args: [data.estado, data.notas || null, new Date().toISOString(), id]
     });
 
-    return NextResponse.json({ success: true, candidato: actualizado });
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error al actualizar candidato:', error);
     return NextResponse.json({ error: 'Error al actualizar' }, { status: 500 });
@@ -68,28 +66,33 @@ export async function DELETE(
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
     }
 
-    const sesion = await db.sesion.findUnique({
-      where: { token },
-      include: { negocio: true }
+    const db = getDb();
+
+    const sesionResult = await db.execute({
+      sql: 'SELECT * FROM Sesion WHERE token = ?',
+      args: [token]
     });
 
-    if (!sesion || sesion.expiresAt < new Date()) {
+    if (sesionResult.rows.length === 0) {
       return NextResponse.json({ error: 'Sesión expirada' }, { status: 401 });
     }
 
+    const sesion = sesionResult.rows[0];
+
     // Verificar que el candidato pertenece a este negocio
-    const candidato = await db.candidato.findFirst({
-      where: { 
-        id,
-        negocioId: sesion.negocioId 
-      }
+    const candidatoResult = await db.execute({
+      sql: 'SELECT id FROM Candidato WHERE id = ? AND negocioId = ?',
+      args: [id, sesion.negocioId as string]
     });
 
-    if (!candidato) {
+    if (candidatoResult.rows.length === 0) {
       return NextResponse.json({ error: 'Candidato no encontrado' }, { status: 404 });
     }
 
-    await db.candidato.delete({ where: { id } });
+    await db.execute({
+      sql: 'DELETE FROM Candidato WHERE id = ?',
+      args: [id]
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

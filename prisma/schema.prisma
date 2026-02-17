@@ -1,5 +1,5 @@
 // ContrataFácil - Sistema de Recepción de CVs
-// Schema v1.0
+// Schema v1.1 - Con notificaciones y Google Sheets
 
 generator client {
   provider        = "prisma-client-js"
@@ -8,7 +8,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = "file:./dev.db"
+  url      = env("DATABASE_URL")
 }
 
 // Negocio/Tienda que busca personal
@@ -33,6 +33,33 @@ model Negocio {
   whatsapp        String?
   facebook        String?
   instagram       String?
+  
+  // ===== NOTIFICACIONES =====
+  
+  // Telegram
+  notifTelegramActivo    Boolean  @default(false)
+  notifTelegramBotToken  String?
+  notifTelegramChatId    String?
+  
+  // Email (Gmail/SMTP)
+  notifEmailActivo       Boolean  @default(true)
+  notifEmailSmtp         String?  // smtp.gmail.com
+  notifEmailPuerto       Int?     @default(587)
+  notifEmailUsuario      String?  // tu@gmail.com
+  notifEmailPassword     String?  // App password de Gmail
+  notifEmailRemitente    String?  // Nombre a mostrar
+  
+  // WhatsApp (API externa - opcional)
+  notifWhatsappActivo    Boolean  @default(false)
+  notifWhatsappApiUrl    String?  // URL de la API (puede ser Twilio, MessageBird, etc)
+  notifWhatsappApiKey    String?  // API Key
+  notifWhatsappNumero    String?  // Número del negocio
+  
+  // ===== INTEGRACIÓN GOOGLE SHEETS =====
+  googleSheetsActivo     Boolean  @default(false)
+  googleSheetsId         String?  // ID del spreadsheet
+  googleSheetsApiKey     String?  // API Key de Google
+  googleSheetsRange      String?  @default("Candidatos!A:L") // Hoja y rango
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -68,6 +95,9 @@ model Candidato {
   // Estado
   estado          String    @default("nuevo") // nuevo, revisado, contactado, contratado, rechazado
   notas           String?    // Notas del negocio
+  
+  // Sincronización
+  syncGoogleSheets Boolean @default(false) // Si ya fue sincronizado
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt

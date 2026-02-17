@@ -77,7 +77,7 @@ export default function HomePage() {
 
       toast({
         title: '¡Registro exitoso!',
-        description: 'Tu negocio ha sido registrado. Redirigiendo al panel...',
+        description: 'Tu organización ha sido registrada. Redirigiendo al panel...',
       });
 
       setTimeout(() => {
@@ -86,7 +86,7 @@ export default function HomePage() {
     } catch (error: any) {
       toast({
         title: 'Error',
-        description: error.message || 'Error al registrar el negocio',
+        description: error.message || 'Error al registrar la organización',
         variant: 'destructive',
       });
     } finally {
@@ -100,6 +100,7 @@ export default function HomePage() {
       <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
+            <img src="/logo.svg" alt="Logo" className="w-10 h-10" />
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
               <Briefcase className="w-5 h-5 text-white" />
             </div>
@@ -129,15 +130,15 @@ export default function HomePage() {
               <span className="text-emerald-600">fácil y organizada</span>
             </h1>
             <p className="text-lg md:text-xl text-slate-600 mb-4">
-              <strong>Tu negocio tiene un link único.</strong> Los aspirantes entran, llenan sus datos y tú los ves en tu panel.
+              <strong>Tu organización tiene un link único.</strong> Los aspirantes entran, llenan sus datos y tú los ves en tu panel.
             </p>
             <p className="text-base text-slate-500 mb-8 max-w-2xl mx-auto">
-              Sin papeles, sin emails desordenados. Un solo lugar para recibir y gestionar todos los candidatos a trabajar en tu negocio.
+              Sin papeles, sin emails desordenados. Un solo lugar para recibir y gestionar todos los candidatos a trabajar en tu organización.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="#registro">
                 <Button size="lg" className="gap-2 bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-500/20">
-                  Registrar mi negocio
+                  Registrar mi organización
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
@@ -164,7 +165,7 @@ export default function HomePage() {
                   <QrCode className="w-6 h-6 text-emerald-600" />
                 </div>
                 <h3 className="font-semibold text-lg mb-2 text-slate-800">Link + QR Único</h3>
-                <p className="text-slate-600 text-sm">Tu negocio tiene un link y código QR exclusivo para compartir.</p>
+                <p className="text-slate-600 text-sm">Tu organización tiene un link y código QR exclusivo para compartir.</p>
               </CardContent>
             </Card>
             <Card className="border-none shadow-sm bg-white">
@@ -205,8 +206,8 @@ export default function HomePage() {
           <div className="grid md:grid-cols-4 gap-8 max-w-4xl mx-auto">
             <div className="text-center">
               <div className="w-14 h-14 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xl font-bold mx-auto mb-4 shadow-lg shadow-emerald-500/30">1</div>
-              <h3 className="font-semibold mb-2 text-slate-800">Registra tu negocio</h3>
-              <p className="text-sm text-slate-600">Crea tu cuenta en segundos con los datos básicos de tu negocio.</p>
+              <h3 className="font-semibold mb-2 text-slate-800">Registra tu organización</h3>
+              <p className="text-sm text-slate-600">Crea tu cuenta en segundos con los datos básicos de tu organización.</p>
             </div>
             <div className="text-center">
               <div className="w-14 h-14 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xl font-bold mx-auto mb-4 shadow-lg shadow-emerald-500/30">2</div>
@@ -242,8 +243,8 @@ export default function HomePage() {
                     <Store className="w-5 h-5 text-emerald-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-slate-800">1. Tú (Negocio)</h3>
-                    <p className="text-sm text-slate-600">Registras tu negocio y activas "Busco personal". El sistema te da un link y QR.</p>
+                    <h3 className="font-semibold text-slate-800">1. Tú (Organización)</h3>
+                    <p className="text-sm text-slate-600">Registras tu organización y activas "Busco personal". El sistema te da un link y QR.</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
@@ -285,13 +286,13 @@ export default function HomePage() {
           <div className="max-w-lg mx-auto">
             <Card className="border-none shadow-lg bg-white">
               <CardHeader className="text-center">
-                <CardTitle className="text-2xl text-slate-800">Registra tu negocio</CardTitle>
+                <CardTitle className="text-2xl text-slate-800">Registra tu organización</CardTitle>
                 <CardDescription>Comienza a recibir candidatos en menos de 2 minutos</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleRegister} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="nombre">Nombre del negocio *</Label>
+                    <Label htmlFor="nombre">Nombre de la organización *</Label>
                     <Input
                       id="nombre"
                       placeholder="Ej: Café del Centro"
@@ -358,7 +359,7 @@ export default function HomePage() {
                     className="w-full bg-emerald-600 hover:bg-emerald-700"
                     disabled={isLoading}
                   >
-                    {isLoading ? 'Registrando...' : 'Registrar mi negocio'}
+                    {isLoading ? 'Registrando...' : 'Registrar mi organización'}
                   </Button>
                 </form>
               </CardContent>
@@ -371,12 +372,13 @@ export default function HomePage() {
       <footer className="border-t py-8 mt-auto bg-slate-50">
         <div className="container mx-auto px-4 text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
+            <img src="/logo.svg" alt="Logo" className="w-8 h-8" />
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
               <Briefcase className="w-4 h-4 text-white" />
             </div>
             <span className="font-semibold text-slate-800">ContrataFácil</span>
           </div>
-          <p className="text-sm text-slate-500">Sistema de recepción de CVs para pequeños negocios.</p>
+          <p className="text-sm text-slate-500">Sistema de recepción de CVs para pequeñas organizaciones.</p>
         </div>
       </footer>
     </div>

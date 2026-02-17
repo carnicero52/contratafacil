@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { createClient } from '@libsql/client';
 import { nanoid } from 'nanoid';
 import bcrypt from 'bcryptjs';
+
+function getDb() {
+  return createClient({
+    url: process.env.TURSO_DATABASE_URL || 'file:./dev.db',
+    authToken: process.env.TURSO_AUTH_TOKEN,
+  });
+}
 
 function generateSlug(nombre: string): string {
   const base = nombre
@@ -29,31 +36,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const db = getDb();
+
     // Verificar si ya existe
-    const existente = await db.negocio.findUnique({
-      where: { email }
+    const existente = await db.execute({
+      sql: 'SELECT id FROM Negocio WHERE email = ?',
+      args: [email]
     });
 
-    if (existente) {
+    if (existente.rows.length > 0) {
       return NextResponse.json(
         { error: 'Ya existe un negocio con ese email' },
         { status: 400 }
       );
     }
 
+    const id = nanoid();
     const slug = generateSlug(nombre);
     const hashedPassword = await bcrypt.hash(password, 10);
+    const now = new Date().toISOString();
 
-    const negocio = await db.negocio.create({
-      data: {
-        nombre,
-        slug,
-        email,
-        password: hashedPassword,
-        telefono: telefono || null,
-        puestoBuscado: puestoBuscado || 'Personal general',
-        buscandoPersonal: true,
-      }
+    await db.execute({
+      sql: `INSERT INTO Negocio (id, nombre, slug, email, password, telefono, puestoBuscado, activo, buscandoPersonal, createdAt, updatedAt) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, 1, 1, ?, ?)`,
+      args: [id, nombre, slug, email, hashedPassword, telefono || null, puestoBuscado || 'Personal general', now, now]
     });
 
     // Crear sesión
@@ -61,21 +67,18 @@ export async function POST(request: NextRequest) {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
 
-    await db.sesion.create({
-      data: {
-        negocioId: negocio.id,
-        token,
-        expiresAt
-      }
+    await db.execute({
+      sql: 'INSERT INTO Sesion (id, negocioId, token, expiresAt, createdAt) VALUES (?, ?, ?, ?, ?)',
+      args: [nanoid(), id, token, expiresAt.toISOString(), now]
     });
 
     const response = NextResponse.json({
       success: true,
       negocio: {
-        id: negocio.id,
-        nombre: negocio.nombre,
-        slug: negocio.slug,
-        email: negocio.email
+        id,
+        nombre,
+        slug,
+        email
       }
     });
 

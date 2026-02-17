@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { getDb } from '@/lib/db-libsql';
 import { cookies } from 'next/headers';
 
 // Actualizar configuración del negocio
@@ -12,34 +12,46 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
     }
 
-    const sesion = await db.sesion.findUnique({
-      where: { token },
-      include: { negocio: true }
+    const db = getDb();
+
+    const sesionResult = await db.execute({
+      sql: 'SELECT * FROM Sesion WHERE token = ?',
+      args: [token]
     });
 
-    if (!sesion || sesion.expiresAt < new Date()) {
+    if (sesionResult.rows.length === 0) {
       return NextResponse.json({ error: 'Sesión expirada' }, { status: 401 });
     }
 
+    const sesion = sesionResult.rows[0];
     const data = await request.json();
 
-    const actualizado = await db.negocio.update({
-      where: { id: sesion.negocioId },
-      data: {
-        nombre: data.nombre,
-        telefono: data.telefono,
-        direccion: data.direccion,
-        descripcion: data.descripcion,
-        puestoBuscado: data.puestoBuscado,
-        requisitos: data.requisitos,
-        buscandoPersonal: data.buscandoPersonal,
-        whatsapp: data.whatsapp,
-        facebook: data.facebook,
-        instagram: data.instagram
-      }
+    await db.execute({
+      sql: `UPDATE Negocio SET 
+            nombre = ?, telefono = ?, direccion = ?, descripcion = ?,
+            puestoBuscado = ?, requisitos = ?, buscandoPersonal = ?,
+            whatsapp = ?, facebook = ?, instagram = ?,
+            notifTelegramActivo = ?, notifTelegramBotToken = ?, notifTelegramChatId = ?,
+            notifEmailActivo = ?, notifEmailSmtp = ?, notifEmailPuerto = ?,
+            notifEmailUsuario = ?, notifEmailPassword = ?, notifEmailRemitente = ?,
+            notifWhatsappActivo = ?, notifWhatsappApiUrl = ?, notifWhatsappApiKey = ?, notifWhatsappNumero = ?,
+            googleSheetsActivo = ?, googleSheetsId = ?, googleSheetsApiKey = ?,
+            updatedAt = ?
+            WHERE id = ?`,
+      args: [
+        data.nombre || null, data.telefono || null, data.direccion || null, data.descripcion || null,
+        data.puestoBuscado || null, data.requisitos || null, data.buscandoPersonal ? 1 : 0,
+        data.whatsapp || null, data.facebook || null, data.instagram || null,
+        data.notifTelegramActivo ? 1 : 0, data.notifTelegramBotToken || null, data.notifTelegramChatId || null,
+        data.notifEmailActivo ? 1 : 0, data.notifEmailSmtp || null, data.notifEmailPuerto || 587,
+        data.notifEmailUsuario || null, data.notifEmailPassword || null, data.notifEmailRemitente || null,
+        data.notifWhatsappActivo ? 1 : 0, data.notifWhatsappApiUrl || null, data.notifWhatsappApiKey || null, data.notifWhatsappNumero || null,
+        data.googleSheetsActivo ? 1 : 0, data.googleSheetsId || null, data.googleSheetsApiKey || null,
+        new Date().toISOString(), sesion.negocioId
+      ]
     });
 
-    return NextResponse.json({ success: true, negocio: actualizado });
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error al actualizar configuración:', error);
     return NextResponse.json({ error: 'Error al guardar' }, { status: 500 });

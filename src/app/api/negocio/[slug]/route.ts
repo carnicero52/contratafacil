@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { getDb } from '@/lib/db-libsql';
 
 export async function GET(
   request: NextRequest,
@@ -7,27 +7,25 @@ export async function GET(
 ) {
   try {
     const { slug } = await params;
+    const db = getDb();
 
-    const negocio = await db.negocio.findUnique({
-      where: { slug },
-      select: {
-        id: true,
-        nombre: true,
-        slug: true,
-        telefono: true,
-        direccion: true,
-        descripcion: true,
-        puestoBuscado: true,
-        requisitos: true,
-        buscandoPersonal: true
-      }
+    const result = await db.execute({
+      sql: `SELECT id, nombre, slug, telefono, direccion, descripcion, puestoBuscado, requisitos, buscandoPersonal 
+            FROM Negocio WHERE slug = ?`,
+      args: [slug]
     });
 
-    if (!negocio) {
+    if (result.rows.length === 0) {
       return NextResponse.json({ error: 'Negocio no encontrado' }, { status: 404 });
     }
 
-    return NextResponse.json({ negocio });
+    const negocio = result.rows[0];
+    return NextResponse.json({ 
+      negocio: {
+        ...negocio,
+        buscandoPersonal: negocio.buscandoPersonal === 1
+      }
+    });
   } catch (error) {
     console.error('Error al obtener negocio:', error);
     return NextResponse.json({ error: 'Error al obtener negocio' }, { status: 500 });

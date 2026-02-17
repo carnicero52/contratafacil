@@ -1,97 +1,58 @@
-# 🎁 FideliQR - Sistema de Fidelización Digital
+# 🚀 ContrataFácil
 
-Un sistema de fidelización de clientes simplificado donde **tú registras a tus clientes manualmente** y ellos acumulan compras escaneando un código QR.
+Sistema de recepción de CVs y gestión de candidatos para pequeños negocios.
 
 ## ✨ Características
 
-### Para Negocios
-- 📊 **Panel de Administración** - Gestiona clientes, ve estadísticas y configura tu negocio
-- 📱 **Código QR Único** - Un QR fijo para colocar en la caja
-- 👤 **Registro Manual de Clientes** - Tú registras a tus clientes con nombre, email y teléfono
-- 🔔 **Notificaciones** - Recibe alertas por Email y Telegram de nuevas recompensas
-- 📈 **Estadísticas** - Visualiza el rendimiento de tu programa de fidelización
+- 🔗 **Link único** para cada negocio
+- 📱 **Código QR** para compartir
+- 📋 **Formulario simple** para aspirantes
+- 📊 **Panel de administración** completo
+- 🔔 **Notificaciones** por Telegram, Email y WhatsApp
+- 📤 **Exportar a CSV** compatible con Excel
+- 🔗 **Integración con Google Sheets** (opcional)
 
-### Flujo Simplificado
-1. **Registra tu negocio** en la página principal
-2. **Agrega clientes manualmente** desde el panel de administración
-3. **Imprime tu QR** y colócalo en la caja
-4. **Clientes escanean** el QR e ingresan su email para acumular compras
-5. **Recompensas automáticas** cada 10 compras
+---
 
-## 🚀 Cómo Funciona
+## 🚀 Desplegar en 1 Clic
 
-### 1. Registro Manual
-El dueño del negocio registra a los clientes desde el panel de administración con:
-- Nombre completo
-- Email (requerido para acumular compras)
-- Teléfono (opcional)
-- Compras iniciales (para migrar clientes existentes)
+### Opción 1: Vercel (Recomendado - GRATIS)
 
-### 2. Acumulación de Compras
-Los clientes escanean el código QR ubicado en la caja e ingresan su email. El sistema:
-- ✅ Suma 1 compra automáticamente
-- ✅ Muestra el progreso hacia la próxima recompensa
-- ✅ Notifica al dueño si se alcanza una recompensa
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/tu-usuario/contratafacil)
 
-### 3. Recompensas Automáticas
-- Cada **10 compras** = 1 recompensa
-- El sistema notifica automáticamente por Telegram
-- El dueño canjea las recompensas desde el panel
+1. Haz clic en el botón arriba
+2. Crea una cuenta en Vercel (gratis)
+3. ¡Listo! Tendrás tu URL en segundos
 
-## 🛠️ Tecnologías
+### Opción 2: Railway
 
-- **Frontend**: Next.js 16, React 19, TypeScript, Tailwind CSS
-- **UI**: shadcn/ui (componentes de alta calidad)
-- **Base de Datos**: SQLite con Prisma ORM
-- **QR**: Librería qrcode para generación
-- **Email**: Nodemailer para notificaciones
-- **Telegram**: API de Bots de Telegram
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new)
 
-## 📁 Estructura del Proyecto
+---
 
-```
-src/
-├── app/
-│   ├── api/                    # API Routes
-│   │   ├── auth/              # Autenticación
-│   │   ├── negocio/           # Gestión de negocios
-│   │   ├── clientes/          # Gestión de clientes
-│   │   ├── compras/           # Registro de compras
-│   │   └── admin/             # Panel de administración
-│   │       ├── canjear/       # Canjear recompensas
-│   │       ├── registrar-cliente/  # Registro manual
-│   │       └── regenerar-qr/  # Regenerar QR
-│   ├── scan/                  # Página para acumular compras
-│   ├── admin/                 # Panel de administración
-│   └── page.tsx               # Landing page
-├── lib/
-│   ├── auth.ts                # Utilidades de autenticación
-│   ├── notifications.ts       # Servicio de emails
-│   ├── telegram.ts            # Servicio de Telegram
-│   └── qrcode.ts              # Generación de QR
-└── components/ui/             # Componentes shadcn/ui
-```
+## 📱 Después del Despliegue
 
-## 🔧 Configuración
+1. Ve a tu URL (ejemplo: `https://contratafacil.vercel.app`)
+2. Registra tu negocio
+3. Accede al panel en `/admin`
+4. Configura las notificaciones
+5. Comparte tu link o QR con los aspirantes
 
-### Variables de Entorno (Opcionales)
+---
 
-```env
-# URL base de la aplicación (importante para QRs)
-NEXT_PUBLIC_BASE_URL=
+## 🔧 Variables de Entorno
 
-# Para envío de emails reales
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=tu-email@gmail.com
-SMTP_PASS=tu-app-password
+Para producción, configura estas variables:
 
-# Telegram (ya configurado)
-TELEGRAM_BOT_TOKEN=tu-token
-TELEGRAM_CHAT_ID=tu-chat-id
-```
+| Variable | Descripción |
+|----------|-------------|
+| `DATABASE_URL` | URL de la base de datos (SQLite para desarrollo) |
+| `TURSO_DATABASE_URL` | URL de Turso (producción) |
+| `TURSO_AUTH_TOKEN` | Token de Turso (producción) |
 
-## 🚀 Inicio Rápido
+---
+
+## 💻 Desarrollo Local
 
 ```bash
 # Instalar dependencias
@@ -100,43 +61,16 @@ bun install
 # Configurar base de datos
 bun run db:push
 
-# Iniciar servidor de desarrollo
+# Iniciar servidor
 bun run dev
 ```
 
-## 📱 Rutas Principales
+---
 
-| Ruta | Descripción |
-|------|-------------|
-| `/` | Página principal y registro de negocio |
-| `/scan?negocio=ID` | Acumular compra (ingresar email) |
-| `/admin` | Panel de administración |
+## 📞 Soporte
 
-## 💡 Casos de Uso Ideales
-
-- ☕ Cafeterías
-- 🍕 Restaurantes
-- 🛍️ Tiendas de ropa
-- 💇 Salones de belleza
-- 🏋️ Gimnasios
-- 📚 Librerías
-- Cualquier negocio que quiera premiar a sus clientes frecuentes
-
-## 🔒 Seguridad
-
-- Autenticación con cookies httpOnly
-- Contraseñas hasheadas con SHA-256
-- Validación de datos en frontend y backend
-- Protección contra CSRF
-- Sesiones con expiración automática (7 días)
-
-## 📊 Modelo de Recompensas
-
-- Cada compra suma 1 punto
-- Cada 10 puntos = 1 recompensa
-- El dueño puede canjear recompensas desde el panel
-- Historial completo de compras y recompensas
+¿Problemas? Crea un issue en GitHub.
 
 ---
 
-Desarrollado con ❤️ usando Next.js 16 y shadcn/ui
+Hecho con ❤️ para pequeños negocios
