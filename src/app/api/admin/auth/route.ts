@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@libsql/client';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import { cookies } from 'next/headers';
 import { nanoid } from 'nanoid';
 
@@ -9,6 +10,17 @@ function getDb() {
     url: process.env.TURSO_DATABASE_URL!,
     authToken: process.env.DATABASE_AUTH_TOKEN!,
   });
+}
+
+// Verificar contraseña (soporta bcrypt y SHA256)
+async function verifyPassword(password: string, hash: string): Promise<boolean> {
+  // Si es bcrypt
+  if (hash.startsWith('$2b$') || hash.startsWith('$2a$')) {
+    return bcrypt.compare(password, hash);
+  }
+  // Si es SHA256
+  const sha256Hash = crypto.createHash('sha256').update(password).digest('hex');
+  return sha256Hash === hash;
 }
 
 // Verificar sesión actual
@@ -93,10 +105,10 @@ export async function POST(request: NextRequest) {
     const { email, password } = await request.json();
     const db = getDb();
 
-    // Buscar negocio
+    // Buscar negocio por email
     const result = await db.execute({
       sql: 'SELECT * FROM Negocio WHERE email = ?',
-      args: [email]
+      args: [email.toLowerCase()]
     });
 
     if (result.rows.length === 0) {
@@ -104,7 +116,7 @@ export async function POST(request: NextRequest) {
     }
 
     const negocio = result.rows[0];
-    const validPassword = await bcrypt.compare(password, negocio.password as string);
+    const validPassword = await verifyPassword(password, negocio.password as string);
     
     if (!validPassword) {
       return NextResponse.json({ error: 'Credenciales inválidas' }, { status: 401 });
