@@ -1,14 +1,22 @@
 import { db } from '@/lib/database';
 import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
 
-// Hash password simple con SHA256
-export function hashPassword(password: string): string {
-  return crypto.createHash('sha256').update(password).digest('hex');
+// Hash password con bcrypt
+export async function hashPassword(password: string): Promise<string> {
+  return bcrypt.hash(password, 10);
 }
 
-// Verificar password
-export function verifyPassword(password: string, hash: string): boolean {
-  return hashPassword(password) === hash;
+// Verificar password - soporta bcrypt y SHA256 (para compatibilidad)
+export async function verifyPassword(password: string, hash: string): Promise<boolean> {
+  // Si el hash parece bcrypt (empieza con $2a$ o $2b$)
+  if (hash.startsWith('$2a$') || hash.startsWith('$2b$')) {
+    return bcrypt.compare(password, hash);
+  }
+  
+  // Fallback a SHA256 para hashes antiguos
+  const sha256Hash = crypto.createHash('sha256').update(password).digest('hex');
+  return sha256Hash === hash;
 }
 
 // Generar token de sesión

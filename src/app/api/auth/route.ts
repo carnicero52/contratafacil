@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
 
     // Buscar negocio por email
     const negocio = await db.negocio.findFirst({
-      where: { emailDestino: email },
+      where: { email: email.toLowerCase() },
     });
 
     if (!negocio) {
@@ -28,7 +28,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Verificar contraseña
-    if (!verifyPassword(password, negocio.password)) {
+    const isValid = await verifyPassword(password, negocio.password as string);
+    if (!isValid) {
       return NextResponse.json(
         { error: 'Credenciales incorrectas' },
         { status: 401 }
@@ -36,7 +37,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Crear sesión
-    const token = await createAdminSession(negocio.id);
+    const token = await createAdminSession(negocio.id as string);
 
     const response = NextResponse.json({
       success: true,
@@ -44,15 +45,14 @@ export async function POST(request: NextRequest) {
         id: negocio.id,
         nombre: negocio.nombre,
         slug: negocio.slug,
-        emailDestino: negocio.emailDestino,
+        email: negocio.email,
         telefono: negocio.telefono,
         direccion: negocio.direccion,
         descripcion: negocio.descripcion,
         logoUrl: negocio.logoUrl,
-        telegramToken: negocio.telegramToken,
-        telegramChatId: negocio.telegramChatId,
-        telegramActivo: negocio.telegramActivo,
-        qrUrl: negocio.qrUrl,
+        puestoBuscado: negocio.puestoBuscado,
+        activo: negocio.activo,
+        buscandoPersonal: negocio.buscandoPersonal,
       },
     });
 
@@ -89,23 +89,30 @@ export async function GET(request: NextRequest) {
 
   const negocio = await db.negocio.findUnique({
     where: { id: negocioId },
-    select: {
-      id: true,
-      nombre: true,
-      slug: true,
-      emailDestino: true,
-      telefono: true,
-      direccion: true,
-      descripcion: true,
-      logoUrl: true,
-      telegramToken: true,
-      telegramChatId: true,
-      telegramActivo: true,
-      qrUrl: true,
-    },
   });
 
-  return NextResponse.json({ authenticated: true, negocio });
+  if (!negocio) {
+    const response = NextResponse.json({ authenticated: false }, { status: 401 });
+    response.cookies.delete('admin_token');
+    return response;
+  }
+
+  return NextResponse.json({
+    authenticated: true,
+    negocio: {
+      id: negocio.id,
+      nombre: negocio.nombre,
+      slug: negocio.slug,
+      email: negocio.email,
+      telefono: negocio.telefono,
+      direccion: negocio.direccion,
+      descripcion: negocio.descripcion,
+      logoUrl: negocio.logoUrl,
+      puestoBuscado: negocio.puestoBuscado,
+      activo: negocio.activo,
+      buscandoPersonal: negocio.buscandoPersonal,
+    }
+  });
 }
 
 // DELETE - Logout
