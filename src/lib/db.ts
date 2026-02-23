@@ -8,8 +8,8 @@ let prismaClient: PrismaClient | null = null
 
 function createPrismaClient() {
   // En producción con Turso
-  const tursoUrl = process.env.TURSO_DATABASE_URL
-  const tursoToken = process.env.TURSO_AUTH_TOKEN
+  const tursoUrl = process.env.TURSO_DATABASE_URL || process.env.DATABASE_URL
+  const tursoToken = process.env.DATABASE_AUTH_TOKEN || process.env.TURSO_AUTH_TOKEN
   
   if (tursoUrl && tursoToken) {
     const libsql = createClient({
